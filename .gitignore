@@ -1,0 +1,10 @@
+/.idea
+*.pyc
+/train
+/test
+/val
+/tb_logger
+/experiments
+/results
+*.bin
+*.pth
