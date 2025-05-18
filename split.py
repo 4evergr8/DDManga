@@ -45,7 +45,7 @@ def unique_filename(dst_dir, filename):
 
 def main():
     base_dir = os.path.dirname(os.path.abspath(__file__))
-    data_dir = os.path.join(base_dir, 'kedamaa')
+    data_dir = os.path.join(base_dir, 'muk-monsieur')
     a_dir = os.path.join(base_dir, 'a')
     b_dir = os.path.join(base_dir, 'b')
 
