@@ -36,7 +36,7 @@ def parse_args():
     parser.add_argument(
         "--model_size",
         type=str,
-        default="tiny",
+        default="large",
         help="Path to export ONNX model.",
     )
     parser.add_argument(
