@@ -31,9 +31,9 @@ class ImageColorizationPipeline:
 
         # Load model weights
         self.model.load_state_dict(
-            #torch.load(model_path, map_location='cpu')['params'],
-            torch.load(model_path, map_location='cpu'),
-            strict=False
+            torch.load(model_path, map_location='cpu')['params'],
+            #torch.load(model_path, map_location='cpu'),
+            strict=True
         )
         self.model.eval()
 
@@ -64,10 +64,10 @@ class ImageColorizationPipeline:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_path', type=str, default='pytorch_model.bin', help='Path to the model weights')
+    parser.add_argument('--model_path', type=str, default='net_g_16000.pth', help='Path to the model weights')
     parser.add_argument('--input', type=str, default='test', help='Input image folder')
     parser.add_argument('--output', type=str, default='results', help='Output folder')
-    parser.add_argument('--input_size', type=int, default=512, help='Input size for the model')
+    parser.add_argument('--input_size', type=int, default=256, help='Input size for the model')
     parser.add_argument('--model_size', type=str, default='large', help='DDColor model size (tiny or large)')
     args = parser.parse_args()
 
@@ -83,7 +83,8 @@ def main():
         img = cv2.imread(img_path)
         if img is not None:
             image_out = colorizer.process(img)
-            cv2.imwrite(os.path.join(args.output, file_name), image_out)
+            output_name = os.path.splitext(file_name)[0] + f"_{args.model_path}" + f"_{args.input_size}.png"
+            cv2.imwrite(os.path.join(args.output, output_name), image_out)
         else:
             print(f"Failed to read {img_path}")
 
