@@ -9,37 +9,41 @@ def unzip_all_in_folder(folder_path):
                 zip_path = os.path.join(root, file)
                 print(f'解压：{zip_path}')
                 with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                    zip_ref.extractall(root)
+                    folder_name = os.path.splitext(file)[0]
+                    extract_path = os.path.join(root, folder_name)
+                    os.makedirs(extract_path, exist_ok=True)
+                    zip_ref.extractall(extract_path)
 
-def find_and_save_images(data_path, output_txt_path, relative_root):
+def find_and_save_images(data_path, output_txt_path):
     all_img_path = []
-    for root, dirs, files in os.walk(data_path):
-        for file in files:
-            if file.lower().endswith(('.png', '.jpg', '.jpeg')):
-                full_path = os.path.join(root, file)
-                rel_path = os.path.relpath(full_path, relative_root)
-                all_img_path.append(rel_path)
+
+    for root, _, files in os.walk(data_path):
+        for ext in ['png', 'jpg', 'jpeg', 'JPG', 'JPEG', 'PNG']:
+            all_img_path += [
+                os.path.join(root, file)
+                for file in files if file.lower().endswith(f'.{ext}')
+            ]
+
     all_img_path.sort()
+
     with open(output_txt_path, 'w') as f:
         for path in tqdm(all_img_path, desc=f"处理 {data_path}"):
             f.write(path + '\n')
 
 def main():
-    # val 路径处理：生成 val/val.txt
     val_path = 'val'
     unzip_all_in_folder(val_path)
     val_txt = os.path.join(val_path, 'val.txt')
     print(f'生成 {val_txt} 中...')
-    find_and_save_images(val_path, val_txt, val_path)
+    find_and_save_images(val_path, val_txt)
 
-    # 处理 train：先解压 zip 包，再生成 train.txt
     train_root = 'train'
     print('解压 train 中的所有 zip 包...')
     unzip_all_in_folder(train_root)
 
     train_txt = os.path.join(train_root, 'train.txt')
     print(f'生成 {train_txt} 中...')
-    find_and_save_images(train_root, train_txt, train_root)
+    find_and_save_images(train_root, train_txt)
 
     print('全部完成。')
 
