@@ -9,7 +9,7 @@ def unzip_all_in_folder(folder_path):
                 zip_path = os.path.join(root, file)
                 print(f'解压：{zip_path}')
                 with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                    zip_ref.extractall(folder_path)  # 解压到 train 根目录，覆盖模式
+                    zip_ref.extractall(root)
 
 def find_and_save_images(data_path, output_txt_path, relative_root):
     all_img_path = []
