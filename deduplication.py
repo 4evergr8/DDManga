@@ -17,10 +17,13 @@ for root, dirs, _ in os.walk(base_folder):
         similar_groups = []
 
         print(f"\n处理子文件夹：{subfolder}")
+
+        # 获取图片列表
+        image_files = [f for f in os.listdir(subfolder)
+                       if f.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.webp'))]
+
         print("计算图片哈希中...")
-        for filename in os.listdir(subfolder):
-            if not filename.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.webp')):
-                continue
+        for filename in tqdm(image_files):
             filepath = os.path.join(subfolder, filename)
             try:
                 with Image.open(filepath) as img:
@@ -29,14 +32,14 @@ for root, dirs, _ in os.walk(base_folder):
             except Exception:
                 continue
 
-        print("查找相似图片中...")
         filepaths = list(hash_dict.keys())
-        for i in range(len(filepaths)):
+        print("查找相似图片中...")
+        for i in tqdm(range(len(filepaths))):
             if filepaths[i] in visited:
                 continue
             group = [filepaths[i]]
             visited.add(filepaths[i])
-            for j in range(i+1, len(filepaths)):
+            for j in range(i + 1, len(filepaths)):
                 if filepaths[j] in visited:
                     continue
                 if hash_dict[filepaths[i]] - hash_dict[filepaths[j]] <= threshold:
