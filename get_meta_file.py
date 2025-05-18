@@ -27,6 +27,7 @@ def find_and_save_images(data_path, output_txt_path, relative_root):
 def main():
     # val 路径处理：生成 val/val.txt
     val_path = 'val'
+    unzip_all_in_folder(val_path)
     val_txt = os.path.join(val_path, 'val.txt')
     print(f'生成 {val_txt} 中...')
     find_and_save_images(val_path, val_txt, val_path)
