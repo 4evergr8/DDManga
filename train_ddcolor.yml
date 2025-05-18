@@ -11,7 +11,7 @@ datasets:
   train:
     name: aaa
     type: LabDataset
-    dataroot_gt: train/
+    dataroot_gt: /
     meta_info_file: ['train/train.txt']
     io_backend:
       type: disk
@@ -41,7 +41,7 @@ datasets:
     name: aaa
     type: LabDataset
     # dataroot_gt: path_to_gt
-    dataroot_gt: val/
+    dataroot_gt: /
     meta_info_file: 'val/val.txt'
     gt_size: 256
     io_backend:
