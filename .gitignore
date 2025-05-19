@@ -8,3 +8,6 @@
 /results
 *.bin
 *.pth
+*.webp
+*.jpg
+*.png
