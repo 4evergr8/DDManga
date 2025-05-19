@@ -87,12 +87,12 @@ train:
   color_enhance_factor: 1.2
   optim_g:
     type: AdamW
-    lr: !!float 5e-5      # 降低学习率
+    lr: !!float 1e-4
     weight_decay: 0.01
     betas: [0.9, 0.99]
   optim_d:
     type: Adam
-    lr: !!float 5e-5      # 降低学习率
+    lr: !!float 1e-4
     weight_decay: 0
     betas: [0.9, 0.99]
 
@@ -131,7 +131,7 @@ train:
     loss_weight: 1.0
   colorfulness_opt:
     type: ColorfulnessLoss
-    loss_weight: 0.0        # 关闭色彩度损失，适合艺术或漫画风格
+    loss_weight: 0.5
 
 # Uncomment these for validation
 # validation settings
@@ -157,7 +157,7 @@ logger:
   print_freq: 100
   save_snapshot_freq: 100
   save_snapshot_verbose: True
-  save_checkpoint_freq: 15000
+  save_checkpoint_freq: 10000
   use_tb_logger: true
   wandb:
     project: ~
