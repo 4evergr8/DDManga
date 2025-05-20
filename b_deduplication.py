@@ -6,9 +6,7 @@ import imagehash
 from tqdm import tqdm
 
 # ===== 参数配置 =====
-GRAYSCALE_DIFF_THRESHOLD = 1
-SATURATION_THRESHOLD = 30
-HASH_DIFF_THRESHOLD = 5
+HASH_DIFF_THRESHOLD = 1
 
 IMG_SUFFIXES = ('.jpg', '.jpeg', '.png', '.bmp', '.webp')
 
@@ -27,40 +25,14 @@ def move_to_delete(src_path):
     print(f"已移动到：{dst_path}")
 
 
-# ===== 第一部分：删除黑白图像 =====
-print("===== 第一部分：删除黑白图像 =====")
-for root, dirs, _ in os.walk(train_dir):
-    if delete_dir in root:
-        continue  # 跳过已移动的内容
-    for subdir in dirs:
-        folder = os.path.join(root, subdir)
-        for file in tqdm(os.listdir(folder)):
-            if not file.lower().endswith(IMG_SUFFIXES):
-                continue
-            path = os.path.join(folder, file)
-            try:
-                with Image.open(path) as img:
-                    if img.mode != 'RGB':
-                        img = img.convert('RGB')
-                    img_np = np.array(img)
-                    diff_rg = np.abs(img_np[:, :, 0] - img_np[:, :, 1])
-                    diff_rb = np.abs(img_np[:, :, 0] - img_np[:, :, 2])
-                    diff_gb = np.abs(img_np[:, :, 1] - img_np[:, :, 2])
-                    mean_diff = (np.mean(diff_rg) + np.mean(diff_rb) + np.mean(diff_gb)) / 3
-                    if mean_diff < GRAYSCALE_DIFF_THRESHOLD:
-                        img.close()
-                        move_to_delete(path)
-            except Exception as e:
-                print(f"处理失败（黑白判断）：{path}，错误：{e}")
-
-# ===== 第二部分：删除色彩单调图像 =====
-print("\n===== 第二部分：删除色彩单调图像（按色彩饱和度） =====")
+# ===== 第一部分：删除色彩单调图像 =====
+print("\n===== 第一部分：删除色彩单调图像（按色彩饱和度） =====")
 for root, dirs, _ in os.walk(train_dir):
     if delete_dir in root:
         continue
     for subdir in dirs:
         folder = os.path.join(root, subdir)
-        for file in tqdm(os.listdir(folder)):
+        for file in os.listdir(folder):
             if not file.lower().endswith(IMG_SUFFIXES):
                 continue
             path = os.path.join(folder, file)
@@ -73,21 +45,45 @@ for root, dirs, _ in os.walk(train_dir):
                     saturation = hsv[..., 1]
                     mean_sat = saturation.mean()
 
-                    print(f"{path} - 平均饱和度: {mean_sat:.2f}")
-
-                    mean_sat = saturation.mean()
-                    std_sat = saturation.std()
-
-                    # 同时判断：整体饱和度高、但变化小 → 很可能是“纯色页”
-                    if mean_sat > 60 and std_sat < 10:
+                    if mean_sat < 30:
+                        print(f"{path} - 平均饱和度: {mean_sat:.2f}（低于{40}，已删除）")
                         move_to_delete(path)
+
+                    elif mean_sat > 100:
+                        std_sat = saturation.std()
+                        print(f"{path} - 平均饱和度: {mean_sat:.2f}，标准差: {std_sat:.2f}")
+                        if std_sat < 60:
+                            print(f"{path} - 标准差低于 {60}，已删除")
+                            move_to_delete(path)
+                        else:
+                            print(f"{path} - 标准差高于 {60}，已保留")
+                    elif mean_sat > 55:
+                        std_sat = saturation.std()
+                        print(f"{path} - 平均饱和度: {mean_sat:.2f}，标准差: {std_sat:.2f}")
+                        if std_sat < 30:
+                            print(f"{path} - 标准差低于 {30}，已删除")
+                            move_to_delete(path)
+                        else:
+                            print(f"{path} - 标准差高于 {30}，已保留")
+                    elif mean_sat > 30:
+                        std_sat = saturation.std()
+                        print(f"{path} - 平均饱和度: {mean_sat:.2f}，标准差: {std_sat:.2f}")
+                        if std_sat < 20:
+                            print(f"{path} - 标准差低于 {20}，已删除")
+                            move_to_delete(path)
+                        else:
+                            print(f"{path} - 标准差高于 {20}，已保留")
+                    else:
+                        print(
+                            f"{path} - 平均饱和度: {mean_sat:.2f}，已保留）")
+
 
             except Exception as e:
                 print(f"处理失败（色彩饱和度判断）：{path}，错误：{e}")
 
 
-# ===== 第三部分：使用哈希去重保留唯一图像 =====
-print("\n===== 第三部分：使用哈希去重图像 =====")
+# ===== 第二部分：使用哈希去重保留唯一图像 =====
+print("\n===== 第二部分：使用哈希去重图像 =====")
 hash_func = imagehash.phash
 
 for root, dirs, _ in os.walk(train_dir):
@@ -130,7 +126,7 @@ for root, dirs, _ in os.walk(train_dir):
 
         print(f"发现 {len(similar_groups)} 组相似图片，开始移动多余文件...")
         for group in similar_groups:
-            for filepath in group[1:]:  # 每组保留第一张
+            for filepath in group[1:]:
                 try:
                     move_to_delete(filepath)
                 except Exception:
