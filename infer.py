@@ -64,7 +64,7 @@ class ImageColorizationPipeline:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_path', type=str, default='net_g_2500.pth', help='Path to the model weights')
+    parser.add_argument('--model_path', type=str, default='net_g_30000 (2).pth', help='Path to the model weights')
     parser.add_argument('--input', type=str, default='test', help='Input image folder')
     parser.add_argument('--output', type=str, default='results', help='Output folder')
     parser.add_argument('--input_size', type=int, default=256, help='Input size for the model')
