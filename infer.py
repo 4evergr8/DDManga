@@ -64,7 +64,7 @@ class ImageColorizationPipeline:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_path', type=str, default='net_g_30000 (2).pth', help='Path to the model weights')
+    parser.add_argument('--model_dir', type=str, default='pretrain', help='Directory containing model weight .pth files')
     parser.add_argument('--input', type=str, default='test', help='Input image folder')
     parser.add_argument('--output', type=str, default='results', help='Output folder')
     parser.add_argument('--input_size', type=int, default=256, help='Input size for the model')
@@ -73,20 +73,28 @@ def main():
 
     print(f'Output path: {args.output}')
     os.makedirs(args.output, exist_ok=True)
+
+    model_files = [f for f in os.listdir(args.model_dir) if f.endswith('.pth')]
+    assert len(model_files) > 0, "No .pth model files found in the model directory."
+
     file_list = os.listdir(args.input)
     assert len(file_list) > 0, "No images found in the input directory."
 
-    colorizer = ImageColorizationPipeline(model_path=args.model_path, input_size=args.input_size, model_size=args.model_size)
+    for model_file in model_files:
+        model_path = os.path.join(args.model_dir, model_file)
+        print(f"\nProcessing with model: {model_file}")
+        colorizer = ImageColorizationPipeline(model_path=model_path, input_size=args.input_size, model_size=args.model_size)
 
-    for file_name in tqdm(file_list):
-        img_path = os.path.join(args.input, file_name)
-        img = cv2.imread(img_path)
-        if img is not None:
-            image_out = colorizer.process(img)
-            output_name = os.path.splitext(file_name)[0] + f"_{args.model_path}" + f"_{args.input_size}.png"
-            cv2.imwrite(os.path.join(args.output, output_name), image_out)
-        else:
-            print(f"Failed to read {img_path}")
+        for file_name in tqdm(file_list, desc=f"Inference with {model_file}"):
+            img_path = os.path.join(args.input, file_name)
+            img = cv2.imread(img_path)
+            if img is not None:
+                image_out = colorizer.process(img)
+                output_name = os.path.splitext(file_name)[0] + f"_{os.path.splitext(model_file)[0]}" + f"_{args.input_size}.png"
+                cv2.imwrite(os.path.join(args.output, output_name), image_out)
+            else:
+                print(f"Failed to read {img_path}")
+
 
 
 if __name__ == '__main__':
