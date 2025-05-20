@@ -9,12 +9,10 @@ authors = [
     "koniro-club",
     "deadflow",
     "karory",
-    "sigma",
     "kenja-time",
     "orangemaru",
     "mignon",
     "torimogura",
-    "sune",
     "blvefo9"
 ]
 
