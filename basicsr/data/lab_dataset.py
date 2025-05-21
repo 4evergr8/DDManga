@@ -109,16 +109,14 @@ class LabDataset(data.Dataset):
         img_gt = cv2.cvtColor(img_gt, cv2.COLOR_BGR2RGB)
 
         # 转灰度图
+        # 彩图 → ab 通道
+        _, img_ab = rgb2lab(img_gt)
+
+        # 彩图 → 二值图 → L通道
         img_gray = cv2.cvtColor(img_gt, cv2.COLOR_RGB2GRAY)
-
-        # 二值化，阈值127可调整
         _, img_binary = cv2.threshold(img_gray, 127, 255, cv2.THRESH_BINARY)
-
-        # 将二值图扩展成3通道用于rgb2lab（灰度图复制3通道）
         img_binary_3c = cv2.cvtColor(img_binary, cv2.COLOR_GRAY2RGB)
-
-        # 转Lab空间
-        img_l, img_ab = rgb2lab(img_binary_3c)
+        img_l, _ = rgb2lab(img_binary_3c)
 
         target_a, target_b = self.ab2int(img_ab)
 
