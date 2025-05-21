@@ -131,7 +131,7 @@ train:
     loss_weight: 1.0
   colorfulness_opt:
     type: ColorfulnessLoss
-    loss_weight: 0.0
+    loss_weight: 0.5
 
 # Uncomment these for validation
 # validation settings
