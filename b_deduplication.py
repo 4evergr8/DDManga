@@ -6,7 +6,7 @@ import imagehash
 from tqdm import tqdm
 
 # ===== 参数配置 =====
-HASH_DIFF_THRESHOLD = 1
+HASH_DIFF_THRESHOLD = 6
 
 IMG_SUFFIXES = ('.jpg', '.jpeg', '.png', '.bmp', '.webp')
 
@@ -24,6 +24,27 @@ def move_to_delete(src_path):
     shutil.move(src_path, dst_path)
     print(f"已移动到：{dst_path}")
 
+
+# ===== 第零部分：删除宽或高小于512的图像 =====
+print("===== 第零部分：删除尺寸过小图像（宽或高 < 512） =====")
+for root, dirs, _ in os.walk(train_dir):
+    if delete_dir in root:
+        continue
+    for subdir in dirs:
+        folder = os.path.join(root, subdir)
+        for file in os.listdir(folder):
+            if not file.lower().endswith(IMG_SUFFIXES):
+                continue
+            path = os.path.join(folder, file)
+            try:
+                with Image.open(path) as img:
+                    w, h = img.size
+                    if w < 512 or h < 512:
+                        print(f"{path} - 尺寸：{w}x{h}，已删除")
+                        img.close()
+                        move_to_delete(path)
+            except Exception as e:
+                print(f"处理失败（尺寸判断）：{path}，错误：{e}")
 
 # ===== 第一部分：删除色彩单调图像 =====
 print("\n===== 第一部分：删除色彩单调图像（按色彩饱和度） =====")
@@ -80,7 +101,6 @@ for root, dirs, _ in os.walk(train_dir):
 
             except Exception as e:
                 print(f"处理失败（色彩饱和度判断）：{path}，错误：{e}")
-
 
 # ===== 第二部分：使用哈希去重保留唯一图像 =====
 print("\n===== 第二部分：使用哈希去重图像 =====")
