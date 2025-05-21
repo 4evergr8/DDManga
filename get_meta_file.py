@@ -9,16 +9,14 @@ def unzip_all_in_folder(folder_path):
                 zip_path = os.path.join(root, file)
                 print(f'解压：{zip_path}')
                 with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                    folder_name = os.path.splitext(file)[0]
-                    extract_path = os.path.join(root, folder_name)
-                    os.makedirs(extract_path, exist_ok=True)
-                    zip_ref.extractall(extract_path)
+                    os.makedirs(root, exist_ok=True)
+                    zip_ref.extractall(root)
 
 def find_and_save_images(data_path, output_txt_path):
     all_img_path = []
 
     for root, _, files in os.walk(data_path):
-        for ext in ['png', 'jpg', 'jpeg', 'JPG', 'JPEG', 'PNG']:
+        for ext in ['png', 'jpg', 'jpeg', 'JPG', 'JPEG', 'PNG',"webp"]:
             all_img_path += [
                 os.path.join(root, file)
                 for file in files if file.lower().endswith(f'.{ext}')
