@@ -40,12 +40,11 @@ class LabDataset(data.Dataset):
         # print(self.ab_palette)
 
         self.do_fmix = opt['do_fmix']
-        self.fmix_params = {'alpha':1.,'decay_power':3.,'shape':(256,256),'max_soft':0.0,'reformulate':False}
+        self.fmix_params = {'alpha': 1., 'decay_power': 3., 'shape': (256, 256), 'max_soft': 0.0, 'reformulate': False}
         self.fmix_p = opt['fmix_p']
         self.do_cutmix = opt['do_cutmix']
-        self.cutmix_params = {'alpha':1.}
+        self.cutmix_params = {'alpha': 1.}
         self.cutmix_p = opt['cutmix_p']
-
 
     def __getitem__(self, index):
         if self.file_client is None:
@@ -73,18 +72,18 @@ class LabDataset(data.Dataset):
                 retry -= 1
         img_gt = imfrombytes(img_bytes, float32=True)
         img_gt = cv2.resize(img_gt, (gt_size, gt_size))  # TODO: 直接resize是否是最佳方案？
-        
+
         # -------------------------------- (Optional) CutMix & FMix -------------------------------- #
         if self.do_fmix and np.random.uniform(0., 1., size=1)[0] > self.fmix_p:
             with torch.no_grad():
                 lam, mask = sample_mask(**self.fmix_params)
-                
+
                 fmix_index = random.randint(0, self.__len__())
                 fmix_img_path = self.paths[fmix_index]
                 fmix_img_bytes = self.file_client.get(fmix_img_path, 'gt')
                 fmix_img = imfrombytes(fmix_img_bytes, float32=True)
                 fmix_img = cv2.resize(fmix_img, (gt_size, gt_size))
-                
+
                 mask = mask.transpose(1, 2, 0)  # (1, 256, 256) ->  # (256, 256, 1)
                 img_gt = mask * img_gt + (1. - mask) * fmix_img
                 img_gt = img_gt.astype(np.float32)
@@ -102,21 +101,10 @@ class LabDataset(data.Dataset):
 
                 img_gt[:, bbx1:bbx2, bby1:bby2] = cmix_img[:, bbx1:bbx2, bby1:bby2]
 
-
         # ----------------------------- Get gray lq, to tentor ----------------------------- #
         # convert to gray
-        # 转RGB（保持不变）
         img_gt = cv2.cvtColor(img_gt, cv2.COLOR_BGR2RGB)
-
-        # 转灰度图
-        # 彩图 → ab 通道
-        _, img_ab = rgb2lab(img_gt)
-
-        # 彩图 → 二值图 → L通道
-        img_gray = cv2.cvtColor(img_gt, cv2.COLOR_RGB2GRAY)
-        _, img_binary = cv2.threshold(img_gray, 127, 255, cv2.THRESH_BINARY)
-        img_binary_3c = cv2.cvtColor(img_binary, cv2.COLOR_GRAY2RGB)
-        img_l, _ = rgb2lab(img_binary_3c)
+        img_l, img_ab = rgb2lab(img_gt)
 
         target_a, target_b = self.ab2int(img_ab)
 
