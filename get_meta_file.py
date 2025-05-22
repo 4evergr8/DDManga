@@ -5,12 +5,11 @@ from tqdm import tqdm
 def unzip_all_in_folder(folder_path):
     for root, _, files in os.walk(folder_path):
         for file in files:
-            if file.lower().endswith('.zip'):
+            if file.lower().endswith(('.zip','.pth')):
                 zip_path = os.path.join(root, file)
                 print(f'解压：{zip_path}')
                 with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-                    os.makedirs(root, exist_ok=True)
-                    zip_ref.extractall(root)
+                    zip_ref.extractall(root,pwd=b'666')
 
 def find_and_save_images(data_path, output_txt_path):
     all_img_path = []
