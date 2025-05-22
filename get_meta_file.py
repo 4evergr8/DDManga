@@ -23,7 +23,7 @@ def find_and_save_images(data_path, output_txt_path):
 
     all_img_path.sort()
 
-    with open(output_txt_path, 'w') as f:
+    with open(output_txt_path, 'w', encoding='utf-8') as f:
         for path in tqdm(all_img_path, desc=f"处理 {data_path}"):
             f.write(path + '\n')
 
