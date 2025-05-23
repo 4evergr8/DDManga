@@ -22,7 +22,7 @@
 
 ## 使用方法
 ### 本地推理
-* 安装Python3.10
+* 安装Python3.10,下载[模型](https://huggingface.co/4evergr8/DDColor/tree/main)
 * 打包下载此仓库，使用Pycharm打开项目
 * 新建pretrain文件夹存放模型，test文件夹存放黑白图片
 * 运行infer.py
