@@ -101,7 +101,7 @@ train:
     milestones: [80000, 120000, 160000, 200000, 240000, 280000, 320000, 360000]
     gamma: 0.5
 
-  total_iter: 10000
+  total_iter: 1000000
   warmup_iter: -1  # no warm up
 
   # losses
@@ -157,7 +157,7 @@ logger:
   print_freq: 100
   save_snapshot_freq: 100
   save_snapshot_verbose: True
-  save_checkpoint_freq: 600
+  save_checkpoint_freq: 500
   use_tb_logger: true
   wandb:
     project: ~
