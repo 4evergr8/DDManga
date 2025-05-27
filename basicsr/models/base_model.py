@@ -326,7 +326,8 @@ class BaseModel():
             retry = 3
             while retry > 0:
                 try:
-                    torch.save(state, save_path)
+                    #torch.save(state, save_path)
+                    print('跳过保存')
                 except Exception as e:
                     logger = get_root_logger()
                     logger.warning(f'Save training state error: {e}, remaining retry times: {retry - 1}')
