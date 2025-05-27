@@ -346,7 +346,7 @@ class ColorModel(BaseModel):
         incep_state_dict = torch.load(path, map_location='cpu')
         block_idx = INCEPTION_V3_FID.BLOCK_INDEX_BY_DIM[2048]
         self.inception_model_fid = INCEPTION_V3_FID(incep_state_dict, [block_idx])
-        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
         self.inception_model_fid.to(device)
         self.inception_model_fid.eval()
 
