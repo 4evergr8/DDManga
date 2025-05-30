@@ -144,7 +144,7 @@ val:
 # logging settings
 logger:
   print_freq: 1
-  save_snapshot_freq: 100
+  save_snapshot_freq: 100000
   save_snapshot_verbose: True
   save_checkpoint_freq: 100
   use_tb_logger: true
