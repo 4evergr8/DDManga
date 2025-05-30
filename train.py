@@ -53,8 +53,10 @@ def get_loader(data_dir, batch_size):
     return loader
 
 # 训练函数
-def train(model, loss_fn, optimizer, train_loader, val_loader, device, epochs):
+def train(model, loss_fn, optimizer, train_loader, val_loader, device, epochs, save_interval=5):
     model.to(device)
+    best_val_loss = float('inf')
+
     for epoch in range(epochs):
         model.train()
         train_loss = 0
@@ -80,6 +82,16 @@ def train(model, loss_fn, optimizer, train_loader, val_loader, device, epochs):
 
         print(f"Epoch {epoch+1}/{epochs} - Train Loss: {train_loss:.4f} - Val Loss: {val_loss:.4f}")
 
+        if val_loss < best_val_loss:
+            best_val_loss = val_loss
+            torch.save(model.state_dict(), "best_model.pth")
+            print(f"保存最优模型，Val Loss: {val_loss:.4f}")
+
+        if (epoch + 1) % save_interval == 0:
+            save_path = f"checkpoint_epoch_{epoch+1}.pth"
+            torch.save(model.state_dict(), save_path)
+            print(f"保存周期模型：{save_path}")
+
 # 主程序
 if __name__ == "__main__":
     from multiscale_pyramid_unet import XDoGToGrayNet, XDoGToGrayLoss  # 请确保模块路径正确
@@ -89,7 +101,11 @@ if __name__ == "__main__":
     loss_fn = XDoGToGrayLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 
-    train_loader = get_loader('./train', batch_size=8)
-    val_loader = get_loader('./val', batch_size=8)
+    batch_size = 8
+    epochs = 20
+    save_interval = 5
 
-    train(model, loss_fn, optimizer, train_loader, val_loader, device, epochs=20)
+    train_loader = get_loader('./train', batch_size=batch_size)
+    val_loader = get_loader('./val', batch_size=batch_size)
+
+    train(model, loss_fn, optimizer, train_loader, val_loader, device, epochs, save_interval)
