@@ -44,13 +44,29 @@ def get_image_paths(folder):
     for ext in exts:
         files.extend(glob(os.path.join(folder, '**', f'*.{ext}'), recursive=True))
     return files
+def pad_collate_fn(batch):
+    xdogs, targets = zip(*batch)
+    max_h = max([img.shape[1] for img in xdogs])
+    max_w = max([img.shape[2] for img in xdogs])
+
+    padded_xdogs = []
+    padded_targets = []
+    for xdog, target in zip(xdogs, targets):
+        pad_h = max_h - xdog.shape[1]
+        pad_w = max_w - xdog.shape[2]
+        xdog_padded = torch.nn.functional.pad(xdog, (0, pad_w, 0, pad_h), value=1.0)
+        target_padded = torch.nn.functional.pad(target, (0, pad_w, 0, pad_h), value=1.0)
+        padded_xdogs.append(xdog_padded)
+        padded_targets.append(target_padded)
+    return torch.stack(padded_xdogs), torch.stack(padded_targets)
 
 # 加载数据
 def get_loader(data_dir, batch_size):
     paths = get_image_paths(data_dir)
     dataset = XDoGDataset(paths)
-    loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4)
+    loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=4, collate_fn=pad_collate_fn)
     return loader
+
 
 # 训练函数
 def train(model, loss_fn, optimizer, train_loader, val_loader, device, epochs, save_interval=5):
