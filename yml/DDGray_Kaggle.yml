@@ -50,12 +50,11 @@ datasets:
     fmix_p: 0.5
 
 # network structures
-
 network_g:
   type: XDoG2GrayNet
-  in_ch: 2
-  out_ch: 1
-  base_feat: 64
+  in_ch: 2            # 输入通道，XDoG一般含有边缘+灰度通道
+  out_ch: 1           # 输出通道，灰度图1通道
+  base_feat: 64       # 基础特征数，可根据需求调整
 
 
 
@@ -64,14 +63,6 @@ network_g:
 
 
 
-
-
-
-  last_norm: Spectral
-
-  num_output_channels: 1    # 灰度图输出1通道
-
-  do_normalize: False
 
 network_d:
   type: DynamicUNetDiscriminator
