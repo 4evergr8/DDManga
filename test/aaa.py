@@ -2,7 +2,7 @@ import os
 import cv2
 import numpy as np
 
-def xdog(img, sigma=0.3, k=1.6, gamma=0.98, epsilon=0.01, phi=10):
+def xdog(img, sigma=0.3, k=1.6, gamma=0.98, epsilon=0.01, phi=20):
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY).astype(np.float32) / 255.0
     g1 = cv2.GaussianBlur(img, (0, 0), sigma)
     g2 = cv2.GaussianBlur(img, (0, 0), sigma * k)

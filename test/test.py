@@ -2,7 +2,7 @@ import os
 import cv2
 import numpy as np
 
-def xdog(img, sigma=0.3, k=1.6, gamma=0.98, epsilon=0.01, phi=10):
+def xdog(img, sigma=0.3, k=1.6, gamma=0.98, epsilon=0.01, phi=20):
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY).astype(np.float32) / 255.0
     g1 = cv2.GaussianBlur(img, (0, 0), sigma)
     g2 = cv2.GaussianBlur(img, (0, 0), sigma * k)
@@ -11,7 +11,7 @@ def xdog(img, sigma=0.3, k=1.6, gamma=0.98, epsilon=0.01, phi=10):
     result = (diff * 255).astype(np.uint8)
     return result
 
-def process_folder(input_folder, output_folder, phi_values):
+def process_folder(input_folder, output_folder, epsilons=[0.005, 0.01, 0.02, 0.05]):
     os.makedirs(output_folder, exist_ok=True)
     image_exts = ['.jpg', '.jpeg', '.png', '.bmp']
 
@@ -25,15 +25,16 @@ def process_folder(input_folder, output_folder, phi_values):
             print(f"跳过无法读取的文件: {filename}")
             continue
 
-        for phi in phi_values:
-            xdog_img = xdog(img, phi=phi)
+        for epsilon in epsilons:
+            xdog_img = xdog(img, epsilon=epsilon)
             base_name, ext = os.path.splitext(filename)
-            out_path = os.path.join(output_folder, f"{base_name}_phi{phi}{ext}")
+            out_filename = f"{base_name}_eps{epsilon}{ext}"
+            out_path = os.path.join(output_folder, out_filename)
             cv2.imwrite(out_path, xdog_img)
-            print(f"处理完成: {filename} phi={phi}")
+            print(f"处理完成: {out_filename}")
 
 if __name__ == '__main__':
     input_dir = '.'  # 当前文件夹
     output_dir = './xdog_output'
-    phi_list = [5, 10, 15, 20]  # 你需要输出的不同phi值
-    process_folder(input_dir, output_dir, phi_list)
+    epsilons = [0.005, 0.01, 0.02, 0.05]
+    process_folder(input_dir, output_dir, epsilons)
