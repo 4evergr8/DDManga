@@ -119,14 +119,12 @@ class XDoGDataset(data.Dataset):
         return len(self.paths)
 
     def apply_xdog(self, gray_img):
-        blur1 = cv2.GaussianBlur(gray_img, (0, 0), sigmaX=0.3)  # sigma=0.3 更敏感
-        blur2 = cv2.GaussianBlur(gray_img, (0, 0), sigmaX=0.48)  # sigma*k=0.48 (k=1.6)
-        diff = blur1 - 0.98 * blur2  # gamma=0.98 保持不变
-        epsilon = 0.005  # 阈值 epsilon
-        phi = 20  # phi=20，边缘强化
-        # 计算XDoG
+        blur1 = cv2.GaussianBlur(gray_img, (0, 0), sigmaX=0.3)
+        blur2 = cv2.GaussianBlur(gray_img, (0, 0), sigmaX=0.48)  # 0.3 * 1.6 = 0.48
+        diff = blur1 - 0.98 * blur2
+        epsilon = 0.005
+        phi = 20
         xdog = np.where(diff >= epsilon, 1.0, 1.0 + np.tanh(phi * (diff - epsilon)))
-        # 归一化为0~1
         return (xdog + 1) / 2
 
 
