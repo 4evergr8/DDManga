@@ -8,7 +8,7 @@ import cv2
 import numpy as np
 
 # XDoG滤波
-def xdog_filter(image, k=1.6, gamma=0.98, epsilon=0.1, phi=200):
+def xdog_filter(image, k=1.6, gamma=0.98, epsilon=0.1, phi=20):
     image = np.array(image).astype(np.float32) / 255.0
     blur1 = cv2.GaussianBlur(image, (0, 0), sigmaX=0.5)
     blur2 = cv2.GaussianBlur(image, (0, 0), sigmaX=0.5 * k)
@@ -67,49 +67,66 @@ def get_loader(data_dir, batch_size, crop_size=512):
     return loader
 
 # 训练函数
-def train(model, loss_fn, optimizer, train_loader, val_loader, device, epochs, save_interval=5):
+def train(model, loss_fn, optimizer, train_loader, val_loader, device, epochs, save_interval_iters=1000):
     model.to(device)
     best_val_loss = float('inf')
+    total_iters = 0
 
     for epoch in range(epochs):
         model.train()
         train_loss = 0
         for iter_idx, (xdog, target) in enumerate(train_loader, start=1):
+            total_iters += 1
             xdog, target = xdog.to(device), target.to(device)
             pred = model(xdog)
             loss = loss_fn(pred, target)
+
+            # 检查是否为 NaN
+            if torch.isnan(loss):
+                print(f"跳过 NaN，Iter [{total_iters}]")
+                print(f"  输入 xdog 是否含 NaN: {torch.isnan(xdog).any().item()}")
+                print(f"  标签 target 是否含 NaN: {torch.isnan(target).any().item()}")
+                print(f"  输出 pred 是否含 NaN: {torch.isnan(pred).any().item()}")
+                print(f"  当前图片路径: {train_loader.dataset.image_paths[iter_idx % len(train_loader.dataset)]}")
+
+                # 清理 GPU 显存防止 OOM
+                del pred, loss
+                torch.cuda.empty_cache()
+
+                continue
+
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+
+
             train_loss += loss.item() * xdog.size(0)
 
-            # 打印当前迭代信息
-            if iter_idx % 10 == 0 or iter_idx == len(train_loader):
-                print(f"Epoch [{epoch+1}/{epochs}] Iter [{iter_idx}/{len(train_loader)}] - Loss: {loss.item():.4f}")
+            # 每10个iter打印loss
+            if total_iters % 10 == 0:
+                print(f"Epoch [{epoch+1}/{epochs}] Iter [{total_iters}] - Loss: {loss.item():.4f}")
+
+            # 定期保存模型并验证
+            if total_iters % save_interval_iters == 0:
+                val_loss = 0
+                model.eval()
+                with torch.no_grad():
+                    for val_xdog, val_target in val_loader:
+                        val_xdog, val_target = val_xdog.to(device), val_target.to(device)
+                        val_pred = model(val_xdog)
+                        val_loss += loss_fn(val_pred, val_target).item() * val_xdog.size(0)
+                val_loss /= len(val_loader.dataset)
+                print(f"Iter {total_iters} - Val Loss: {val_loss:.4f}")
+
+                if val_loss < best_val_loss:
+                    best_val_loss = val_loss
+                    torch.save(model.state_dict(), "best_model.pth")
+                    print(f"保存最优模型，Iter {total_iters}，Val Loss: {val_loss:.4f}")
+
+                model.train()
 
         train_loss /= len(train_loader.dataset)
-
-        model.eval()
-        val_loss = 0
-        with torch.no_grad():
-            for xdog, target in val_loader:
-                xdog, target = xdog.to(device), target.to(device)
-                pred = model(xdog)
-                loss = loss_fn(pred, target)
-                val_loss += loss.item() * xdog.size(0)
-        val_loss /= len(val_loader.dataset)
-
-        print(f"Epoch {epoch+1}/{epochs} - Train Loss: {train_loss:.4f} - Val Loss: {val_loss:.4f}")
-
-        if val_loss < best_val_loss:
-            best_val_loss = val_loss
-            torch.save(model.state_dict(), "best_model.pth")
-            print(f"保存最优模型，Val Loss: {val_loss:.4f}")
-
-        if (epoch + 1) % save_interval == 0:
-            save_path = f"checkpoint_epoch_{epoch+1}.pth"
-            torch.save(model.state_dict(), save_path)
-            print(f"保存周期模型：{save_path}")
+        print(f"Epoch {epoch+1}/{epochs} - Train Loss: {train_loss:.4f}")
 
 # 主程序
 if __name__ == "__main__":
@@ -118,12 +135,12 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = XDoGToGrayNet(base_channels=64)
     loss_fn = XDoGToGrayLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-5)
 
     batch_size = 1
     crop_size = 512
     epochs = 200
-    save_interval = 5
+    save_interval = 100
 
     train_loader = get_loader('/content/gdrive/MyDrive/DDColor/train', batch_size=batch_size, crop_size=crop_size)
     val_loader = get_loader('/content/gdrive/MyDrive/DDColor/val', batch_size=batch_size, crop_size=crop_size)
