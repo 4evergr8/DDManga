@@ -2,7 +2,7 @@
 name: train_ddcolor_l
 model_type: ColorModel
 scale: 1
-num_gpu: 0
+num_gpu: 1
 manual_seed: 0
 queue_size: 64
 
