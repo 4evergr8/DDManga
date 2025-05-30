@@ -2,7 +2,7 @@ import os
 import cv2
 import numpy as np
 
-def xdog(img, sigma=0.5, k=1.2, gamma=0.98, epsilon=0.005, phi=20):
+def xdog(img, sigma=0.3, k=1.6, gamma=0.98, epsilon=0.005, phi=20):
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY).astype(np.float32) / 255.0
     g1 = cv2.GaussianBlur(img, (0, 0), sigma)
     g2 = cv2.GaussianBlur(img, (0, 0), sigma * k)
@@ -34,3 +34,5 @@ if __name__ == '__main__':
     input_dir = '.'  # 当前文件夹
     output_dir = './xdog_output'
     process_folder(input_dir, output_dir)
+
+
