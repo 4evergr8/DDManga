@@ -105,7 +105,7 @@ if __name__ == "__main__":
     epochs = 20
     save_interval = 5
 
-    train_loader = get_loader('./train', batch_size=batch_size)
-    val_loader = get_loader('./val', batch_size=batch_size)
+    train_loader = get_loader('/kaggle/temp/train', batch_size=batch_size)
+    val_loader = get_loader('/kaggle/temp/val', batch_size=batch_size)
 
     train(model, loss_fn, optimizer, train_loader, val_loader, device, epochs, save_interval)
