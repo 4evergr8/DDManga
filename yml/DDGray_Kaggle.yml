@@ -50,14 +50,22 @@ datasets:
     fmix_p: 0.5
 
 # network structures
+
 network_g:
-  type: DDColor
-  encoder_name: convnext-l
-  encoder_from_pretrain: False
-  decoder_name: MultiScaleColorDecoder
-  num_queries: 100
-  num_scales: 3
-  dec_layers: 9
+  type: XDoG2GrayNet
+  in_ch: 2
+  out_ch: 1
+  base_feat: 64
+
+
+
+
+
+
+
+
+
+
 
   last_norm: Spectral
 
