@@ -53,7 +53,7 @@ datasets:
 network_g:
   type: DDColor
   encoder_name: convnext-l
-  encoder_from_pretrain: True
+  encoder_from_pretrain: False
   decoder_name: MultiScaleColorDecoder
   num_queries: 100
   num_scales: 3
