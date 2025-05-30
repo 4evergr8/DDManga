@@ -10,7 +10,7 @@ from basicsr.utils.registry import ARCH_REGISTRY
 
 
 class GreyRestorationPipeline:
-    def __init__(self, model_path, input_size=256):
+    def __init__(self, model_path, input_size=256, output_dir='results'):
         self.input_size = input_size
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -19,16 +19,26 @@ class GreyRestorationPipeline:
         self.model.load_state_dict(torch.load(model_path, map_location='cpu')['params'], strict=True)
         self.model.eval()
 
+        # 输入中间图保存路径（直接存到输出文件夹）
+        self.save_input_dir = output_dir
+        os.makedirs(self.save_input_dir, exist_ok=True)
+
     @torch.no_grad()
-    def process(self, img):
+    def process(self, img, img_name=None):
         h, w = img.shape[:2]
         img_resized = cv2.resize(img, (self.input_size, self.input_size))
 
-        # 先计算XDoG图
-        xdog_img = xdog(img_resized)  # 已经是灰度图uint8
+        # 计算XDoG图（灰度uint8）
+        xdog_img = xdog(img_resized)
 
         # 灰度图
         gray_img = cv2.cvtColor(img_resized, cv2.COLOR_BGR2GRAY)
+
+        # 保存两张中间图到输出目录
+        if img_name is not None:
+            base_name = os.path.splitext(img_name)[0]
+            cv2.imwrite(os.path.join(self.save_input_dir, base_name + '_xdog.png'), xdog_img)
+            cv2.imwrite(os.path.join(self.save_input_dir, base_name + '_gray.png'), gray_img)
 
         # 拼接成2通道输入，归一化到0~1
         input_tensor = np.stack([xdog_img, gray_img], axis=0).astype(np.float32) / 255.0
@@ -50,6 +60,7 @@ def xdog(img, sigma=0.3, k=1.6, gamma=0.98, epsilon=0.005, phi=20):
     result = (diff * 255).astype(np.uint8)
     return result
 
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--model_dir', type=str, default='pretrain', help='权重文件目录')
@@ -68,7 +79,7 @@ def main():
     for model_file in model_files:
         model_path = os.path.join(args.model_dir, model_file)
         print(f"\n加载模型: {model_file}")
-        restorer = GreyRestorationPipeline(model_path, input_size=args.input_size)
+        restorer = GreyRestorationPipeline(model_path, input_size=args.input_size, output_dir=args.output)
 
         for file_name in tqdm(image_list, desc=f"推理中（{model_file}）"):
             img_path = os.path.join(args.input, file_name)
@@ -76,7 +87,7 @@ def main():
             if img is None:
                 print(f"无法读取图片: {img_path}")
                 continue
-            result = restorer.process(img)
+            result = restorer.process(img, img_name=file_name)
             save_name = os.path.splitext(file_name)[0] + f"_{os.path.splitext(model_file)[0]}.png"
             cv2.imwrite(os.path.join(args.output, save_name), result)
 
