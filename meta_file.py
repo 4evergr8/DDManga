@@ -1,6 +1,8 @@
 import os
 import zipfile
 import cv2
+from PIL import Image
+
 
 def unzip_all_in_folder(folder_path):
     for root, _, files in os.walk(folder_path):
@@ -16,17 +18,26 @@ def unzip_all_in_folder(folder_path):
                 except Exception as e:
                     print(f'⚠️ 解压失败：{zip_path}，错误：{e}')
 
-def is_image_valid_cv2(image_path):
+def is_image_valid(image_path):
+    # PIL结构检查
+    try:
+        with Image.open(image_path) as img:
+            img.verify()
+    except Exception:
+        return False
+
+    # OpenCV像素解码检查
     try:
         img = cv2.imread(image_path)
         if img is None:
             return False
         if img.shape[0] < 10 or img.shape[1] < 10:
             return False
-        return True
-    except Exception as e:
-        print(f'⚠️ 读取失败：{image_path}，错误：{e}')
+    except Exception:
         return False
+
+    return True
+
 
 def delete_invalid_images(data_path):
     deleted_count = 0
@@ -37,7 +48,7 @@ def delete_invalid_images(data_path):
             if file.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
                 abs_path = os.path.abspath(os.path.join(root, file))
                 total_checked += 1
-                if not is_image_valid_cv2(abs_path):
+                if not is_image_valid(abs_path):
                     try:
                         os.remove(abs_path)
                         print(f'🗑️ 已删除无效图像：{abs_path}')
