@@ -1,7 +1,6 @@
 import os
 import zipfile
 import cv2
-from tqdm import tqdm
 
 def unzip_all_in_folder(folder_path):
     for root, _, files in os.walk(folder_path):
@@ -12,8 +11,8 @@ def unzip_all_in_folder(folder_path):
                 try:
                     with zipfile.ZipFile(zip_path, 'r') as zip_ref:
                         zip_ref.extractall(root, pwd=b'666')
-                    os.remove(zip_path)  # ✅ 解压完成后删除压缩包
-                    print(f'已删除：{zip_path}')
+                    os.remove(zip_path)
+                    print(f'已删除压缩包：{zip_path}')
                 except Exception as e:
                     print(f'⚠️ 解压失败：{zip_path}，错误：{e}')
 
@@ -23,48 +22,42 @@ def is_image_valid_cv2(image_path):
         if img is None:
             return False
         if img.shape[0] < 10 or img.shape[1] < 10:
-            return False  # 尺寸太小，可能是无效图像
+            return False
         return True
     except Exception as e:
         print(f'⚠️ 读取失败：{image_path}，错误：{e}')
         return False
 
-def find_and_save_images(data_path, output_txt_path):
-    all_img_path = []
-    skipped_count = 0
+def delete_invalid_images(data_path):
+    deleted_count = 0
+    total_checked = 0
 
     for root, _, files in os.walk(data_path):
         for file in files:
             if file.lower().endswith(('.png', '.jpg', '.jpeg', '.webp')):
                 abs_path = os.path.abspath(os.path.join(root, file))
-                if is_image_valid_cv2(abs_path):  # ✅ 用 OpenCV 检测图像
-                    all_img_path.append(abs_path)
-                else:
-                    print(f'⚠️ 无效图像：{abs_path}')
-                    skipped_count += 1
+                total_checked += 1
+                if not is_image_valid_cv2(abs_path):
+                    try:
+                        os.remove(abs_path)
+                        print(f'🗑️ 已删除无效图像：{abs_path}')
+                        deleted_count += 1
+                    except Exception as e:
+                        print(f'⚠️ 删除失败：{abs_path}，错误：{e}')
 
-    all_img_path.sort()
-
-    with open(output_txt_path, 'w', encoding='utf-8') as f:
-        for path in tqdm(all_img_path, desc=f"生成 {output_txt_path}"):
-            f.write(path + '\n')
-
-    print(f'✅ 共记录有效图像：{len(all_img_path)} 张，跳过损坏图像：{skipped_count} 张')
+    print(f'✅ 检查完成：共检查 {total_checked} 张图像，删除 {deleted_count} 张无效图像')
 
 def main():
     val_path = 'val'
     unzip_all_in_folder(val_path)
-    val_txt = os.path.join(val_path, 'val.txt')
-    print(f'生成 {val_txt} 中...')
-
+    print(f'检查并清理 {val_path} 中的无效图像...')
+    delete_invalid_images(val_path)
 
     train_root = 'train'
     print('解压 train 中的所有 zip 包...')
     unzip_all_in_folder(train_root)
-
-    train_txt = os.path.join(train_root, 'train.txt')
-    print(f'生成 {train_txt} 中...')
-
+    print(f'检查并清理 {train_root} 中的无效图像...')
+    delete_invalid_images(train_root)
 
     print('🎉 全部完成！')
 
