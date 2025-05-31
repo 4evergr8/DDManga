@@ -142,7 +142,7 @@ if __name__ == "__main__":
     batch_size = 2
     crop_size = 512
     epochs = 200000
-    save_interval = 10000
+    save_interval = 100
 
     train_loader = get_loader('/kaggle/temp/train', batch_size=batch_size, crop_size=crop_size)
     val_loader = get_loader('/kaggle/temp/val', batch_size=batch_size, crop_size=crop_size)
