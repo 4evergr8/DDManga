@@ -67,7 +67,7 @@ def get_loader(data_dir, batch_size, crop_size=512):
     return loader
 
 # 训练函数
-def train(model, loss_fn, optimizer, train_loader, val_loader, device, epochs, save_interval_iters=1000):
+def train(model, loss_fn, optimizer, train_loader, val_loader, device, epochs, save_interval_iters=100):
     model.to(device)
     best_val_loss = float('inf')
     total_iters = 0
@@ -119,8 +119,15 @@ def train(model, loss_fn, optimizer, train_loader, val_loader, device, epochs, s
 
                 model.train()
 
+            # ✅ 额外保存快照模型
+            if total_iters % 2000 == 0:
+                save_model = model.module if isinstance(model, torch.nn.DataParallel) else model
+                torch.save(save_model.state_dict(), f"iter_{total_iters}.pth")
+                print(f"📦 已保存快照模型：iter_{total_iters}.pth")
+
         train_loss /= len(train_loader.dataset)
         print(f"Epoch {epoch+1}/{epochs} - Train Loss: {train_loss:.4f}")
+
 
 # 主程序
 if __name__ == "__main__":
