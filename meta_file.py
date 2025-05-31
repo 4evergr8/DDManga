@@ -19,24 +19,13 @@ def unzip_all_in_folder(folder_path):
                     print(f'⚠️ 解压失败：{zip_path}，错误：{e}')
 
 def is_image_valid(image_path):
-    # PIL结构检查
     try:
         with Image.open(image_path) as img:
-            img.verify()
+            _ = img.convert("RGB")
     except Exception:
         return False
-
-    # OpenCV像素解码检查
-    try:
-        img = cv2.imread(image_path)
-        if img is None:
-            return False
-        if img.shape[0] < 10 or img.shape[1] < 10:
-            return False
-    except Exception:
-        return False
-
     return True
+
 
 
 def delete_invalid_images(data_path):
