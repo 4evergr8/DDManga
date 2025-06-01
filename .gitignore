@@ -2,13 +2,8 @@
 *.pyc
 /train
 /val
-/tb_logger
-/experiments
-/results
-*.bin
-*.pth
-*.webp
-*.png
-/test
 /build
 /dist
+/model
+/before
+/after
