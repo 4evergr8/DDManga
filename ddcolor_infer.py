@@ -1,15 +1,12 @@
 import os
+from skimage import color
 import cv2
 import argparse
-import torch
 import numpy as np
 import torch.nn.functional as F
 from tqdm import tqdm
-
-
 import torch
 import torch.nn as nn
-
 from basicsr.archs.ddcolor_arch_utils.unet import Hook, CustomPixelShuffle_ICNR, UnetBlockWide, NormType, \
     custom_conv_layer
 from basicsr.archs.ddcolor_arch_utils.convnext import ConvNeXt
@@ -291,7 +288,7 @@ class MultiScaleColorDecoder(nn.Module):
 class ImageColorizationPipeline:
     def __init__(self, model_path, input_size=256, model_size='large'):
         self.input_size = input_size
-        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.device = torch.device('cpu')
 
         self.encoder_name = 'convnext-t' if model_size == 'tiny' else 'convnext-l'
         self.decoder_type = 'MultiScaleColorDecoder'
@@ -341,40 +338,45 @@ class ImageColorizationPipeline:
         return output_img
 
 
+
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--model_dir', type=str, default='pretrain', help='Directory containing model weight .pth files')
-    parser.add_argument('--input', type=str, default='test', help='Input image folder')
-    parser.add_argument('--output', type=str, default='results', help='Output folder')
-    parser.add_argument('--input_size', type=int, default=256, help='Input size for the model')
-    parser.add_argument('--model_size', type=str, default='large', help='DDColor model size (tiny or large)')
-    args = parser.parse_args()
+    cwd = os.getcwd()
 
-    print(f'Output path: {args.output}')
-    os.makedirs(args.output, exist_ok=True)
+    model_dir = os.path.join(cwd, 'model')
+    input_dir = os.path.join(cwd, 'before')
+    output_dir = os.path.join(cwd, 'after')
+    input_size = 256
+    model_size = 'large'
 
-    model_files = [f for f in os.listdir(args.model_dir) if f.endswith('.pth')]
-    assert len(model_files) > 0, "No .pth model files found in the model directory."
+    print(f'输出目录：{output_dir}')
+    os.makedirs(output_dir, exist_ok=True)
 
-    file_list = os.listdir(args.input)
-    assert len(file_list) > 0, "No images found in the input directory."
+    model_files = [f for f in os.listdir(model_dir) if f.endswith('.pth')]
+    assert len(model_files) > 0, "模型目录中未找到 .pth 文件"
+
+    file_list = os.listdir(input_dir)
+    assert len(file_list) > 0, "输入目录中未找到任何图片"
 
     for model_file in model_files:
-        model_path = os.path.join(args.model_dir, model_file)
-        print(f"\nProcessing with model: {model_file}")
-        colorizer = ImageColorizationPipeline(model_path=model_path, input_size=args.input_size, model_size=args.model_size)
+        model_path = os.path.join(model_dir, model_file)
+        print(f"\n使用模型：{model_file}")
+        colorizer = ImageColorizationPipeline(model_path=model_path, input_size=input_size, model_size=model_size)
 
-        for file_name in tqdm(file_list, desc=f"Inference with {model_file}"):
-            img_path = os.path.join(args.input, file_name)
+        for file_name in tqdm(file_list, desc=f"正在处理：{model_file}"):
+            img_path = os.path.join(input_dir, file_name)
+            output_name = os.path.splitext(file_name)[0] + f"_{os.path.splitext(model_file)[0]}_{input_size}.png"
+            output_path = os.path.join(output_dir, output_name)
+
+            if os.path.exists(output_path):
+                print(f"跳过 {file_name}，输出文件已存在")
+                continue
+
             img = cv2.imread(img_path)
             if img is not None:
                 image_out = colorizer.process(img)
-                output_name = os.path.splitext(file_name)[0] + f"_{os.path.splitext(model_file)[0]}" + f"_{args.input_size}.png"
-                cv2.imwrite(os.path.join(args.output, output_name), image_out)
+                cv2.imwrite(output_path, image_out)
             else:
-                print(f"Failed to read {img_path}")
-
-
+                print(f"读取失败：{img_path}")
 
 if __name__ == '__main__':
     main()
