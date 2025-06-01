@@ -10,3 +10,5 @@
 *.webp
 *.png
 /test
+/build
+/dist
