@@ -6,6 +6,6 @@ scikit-image==0.25.2
 torchvision==0.22.1
 timm==0.9.2
 PyYAML==6.0.2
-tqdm==4.65.0
+tqdm==4.66.3
 requests==2.32.3
 pillow==11.2.1
