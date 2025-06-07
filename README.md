@@ -5,7 +5,7 @@
 
 
 
-<h3 align="center">Thousand2OneColor</h3>
+<h3 align="center">DDManga</h3>
 
   <p align="center">
     基于机器学习的黑白漫画上色
@@ -22,11 +22,11 @@
 
 ## 使用方法
 ### 本地推理
-* 安装Python3.10,下载[模型](https://huggingface.co/4evergr8/DDColor/tree/main)
-* 打包下载此仓库，使用Pycharm打开项目
-* 新建pretrain文件夹存放模型，test文件夹存放黑白图片
-* 运行infer.py
-* 在results文件夹查看结果
+* 前往仓库的[Release](https://huggingface.co/4evergr8/DDColor/tree/main)下载最新版本
+* 解压出全部文件
+* 按文件夹放置图片
+* 双击运行,等待推理完毕
+* 查看结果 
 
 
 ### 云端训练
@@ -40,4 +40,5 @@
 
 ## 感谢
 * 阿里巴巴达摩院的DDColor项目
-* Google的Colab帮了我很大的忙，Kaggle就是一坨
+* Google的Colab和Kaggle提供的免费光谱
+* HuggingFace🤗提供的免费云端存储
