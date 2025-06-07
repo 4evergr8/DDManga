@@ -340,6 +340,9 @@ class ImageColorizationPipeline:
 
 
 def main():
+    print('此程序修改于阿里达摩院的DDColor项目，开源地址：https://github.com/piddnad/DDColor')
+    print('此程序修改于阿里达摩院的DDColor项目，开源地址：https://github.com/piddnad/DDColor')
+    print('此程序修改于阿里达摩院的DDColor项目，开源地址：https://github.com/piddnad/DDColor')
     cwd = os.getcwd()
 
     model_dir = os.path.join(cwd, 'model')
