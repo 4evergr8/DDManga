@@ -12,9 +12,9 @@
     <br>
     其实是本子上色
     <br>
-    <a href="https://github.com/4evergr8/Thousand2OneColor/issues/new">🐞故障报告</a>
+    <a href="https://github.com/4evergr8/DDManga/issues/new">🐞故障报告</a>
     ·
-    <a href="https://github.com/4evergr8/Thousand2OneColor/issues/new">🏹功能请求</a>
+    <a href="https://github.com/4evergr8/DDManga/issues/new">🏹功能请求</a>
   </p>
 
 
@@ -22,7 +22,7 @@
 
 ## 使用方法
 ### 本地推理
-* 前往仓库的[Release](https://huggingface.co/4evergr8/DDColor/tree/main)下载最新版本
+* 前往仓库的[Release](https://github.com/4evergr8/DDManga/releases)下载最新版本
 * 解压出全部文件
 * 按文件夹放置图片
 * 双击运行,等待推理完毕
